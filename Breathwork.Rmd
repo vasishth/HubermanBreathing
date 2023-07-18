@@ -1,0 +1,303 @@
+---
+title: "Breathing Huberman"
+author: "Shravan Vasishth"
+date: '2023-07-17'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What the original paper is about
+
+The paper is titled
+
+*Brief structured respiration practices enhance mood and reduce physiological arousal*
+
+and evaluates through an online study the effect of
+breathwork compared to mindfulness meditation on
+several different self-perceived well-being metrics.
+
+The paper is available from: 
+https://doi.org/10.1016/j.xcrm.2022.100895
+
+It is open access and the data are purportedly available (more on this below).
+
+Mindfulness meditation (hereafter, MM) is compared to three other methods:
+- cyclic sighing (CS), ``which emphasizes prolonged exhalations''
+- box breathing (BB), ``which is equal duration of inhalations, breath retentions, and exhalations''
+- cyclic hyperventilation (CH) ``with retention, with longer inhalations and shorter exhalations''
+
+The main statistical claim I wanted to investigate was:
+
+>  Using a mixed-effects model, we show that breathwork, especially the exhale-focused cyclic sighing, produces greater improvement in mood ($p < 0.05$) and reduction in respiratory rate ($p < 0.05$) compared with mindfulness meditation. Daily 5-min cyclic sighing has promise as an effective stress management exercise.
+
+Also this:
+
+> 5 min per day of deliberate breathing practice can cause sig- nificant shifts in autonomic tone and well-being.
+
+[Conflict of interest statement: I practice Qi Gong daily, which involves the kind of breathing exercises they discuss in the paper. I already believe the claim that controlled breathing improves one's mental and physical state, but as the paper also mentions, Yogis knew that all along.]
+
+# Methods
+
+114 participants, with the following between-subjects partitioning:
+
+- MM: 24
+- CS: 30
+- BB: 21
+- CH: 33
+
+Dependent variables:
+- positive affect (positive and negative affect schedule [PANAS], range 10–50), 
+- negative affect (PANAS, range 10–50), 
+- state anxiety (State-Trait Anxiety Inventory [STAI], range 20–80) scores on each participant before and after each breathwork protocol daily.
+
+The experiment was conducted over 29 days, so we have repeated measurements from each subject in each condition, but no repeated measures across the four conditions.
+
+# Claim 1 using linear mixed models
+
+> We then examined if breathwork was more effective than mindfulness meditation in reducing anxiety and improving mood. To address this, we constructed a linear mixed-effects model with protocol type and ``number of days on protocol'' as the fixed effect and participants as the random effect predictors.
+
+> the breathwork group had a notably higher increase in daily pos- itive affect (Figures 2A and 2D). The breathwork group also had a significant interaction with the number of days on protocol, such that the daily positive affect increase was larger the more days subjects had been on the protocol (Figures 2A and 2D), suggest- ing an effect of adherence over time on the daily positive affect benefits.
+
+# Claim 2
+
+> we compared each specific breathwork group with the mindfulness meditation group using the same mixed-ef- fects modeling method. We found that the cyclic sighing group had a significantly higher increase in positive affect than those in the mindfulness meditation group (Figures 3, S2A, and S2B). The other two breathwork groups were also higher than mindful- ness meditation; however, this difference was not significant (Figures 3, S2A, S2C, and S2D). Cyclic sighing also had a signif- icant interaction with cumulative days on protocol compared with mindfulness meditation, suggesting that subjects benefited more from the exercise the more days they did it, an effect not observed in the other groups (Figure 3B).
+
+# The data provided
+
+
+The authors write:
+
+>     De-identified raw human physiology and survey data have been deposited at Dryad repository (https://datadryad.org/) and are publicly available as of the date of publication. Accession numbers are listed in the key resources table.
+    All original code has been deposited at Zenodo and is publicly available as of the date of publication. DOIs are listed in the key resources table.
+    Any additional information required to reanalyze the data reported in this paper is available from the lead contact upon request.
+
+
+Some comments: 
+- they claim that ``all original code'' has been deposited at Zenodo. However, all they deposit there is the R preprocessing files, the crucial linear mixed modeling code was done in Matlab and is not provided (at least, I could not find it). No data is provided with the files and no README, so it was impossible for me to run the code.
+- They mention a lead contact for obtaining any missing information, and the phrase lead contact is hyper-linked, but the link doesn't lead to any name.
+- The data are in an Excel file that is deposited in some other repository (dryad), not Zenodo, and is called:
+
+BWPilot_CombinedData_20210803_fordryad_addvars_cleaned_noround2_v3.xlsx
+
+The file name is a red flag for me and tells me that the authors are amateurs/beginners in data management. This file name definitely lowers my confidence in this entire study. The file name also raises some questions: what was in versions 1 and 2, and what exactly does cleaned mean here?
+
+# My data analysis
+
+Read in the csv version of the Excel file:
+
+```{r}
+dat<-read.csv("BWPilot_CombinedData_20210803_fordryad_addvars_cleaned_noround2_v3.csv",sep=";",na.strings=".")
+```
+
+Isolate the first nine columns for the linear mixed models analyses.
+
+```{r}
+colnames(dat)
+
+dat<-dat[,1:9]
+```
+
+Rename the columms to more tractable names:
+
+```{r}
+colnames(dat)<-c("subj","days","exercise","PrePANASPos","PrePANASNeg","PostPANASPos","PostPANASNeg","PreSTAI","PostSTAI")
+```
+
+Remove all irrelevant days:
+
+```{r}
+dat<-subset(dat,days>0 & days<29)
+```
+
+Sanity check:
+
+```{r}
+length(unique(dat$subj))
+```
+
+One subject seems to be missing: the authors wrote they had 114 subjects.
+
+Convert the treatments to factors:
+
+```{r}
+dat$exercise<-factor(dat$exercise)
+```
+
+The authors write that the names for the exercises in the data file do not correspond to the names used in the paper:
+
+> Round 1 Exercise: Participant’s assigned intervention. Note the nomenclature is slightly different than the manuscript. Super Oxygenation = Cyclic Hyperventilation with Retention. Slow Breathing = Cyclic Sighing
+
+
+We will therefore rename the conditions from those in the data file to those in the paper:
+
+```{r}
+dat$exercise<-factor(dat$exercise,
+                     levels=c("Mindful Meditation",
+                              "Box Breathing",
+                              "Slow Breathing",
+                              "Super Oxygenation"))
+
+dat$cond<-ifelse(dat$exercise=="Mindful Meditation",
+                 "MM",
+       ifelse(dat$exercise=="Box Breathing",
+              "BB",
+              ifelse(dat$exercise=="Slow Breathing",
+                     "CS",
+                     ifelse(dat$exercise=="Super Oxygenation",
+                            "CH",NA))))
+```
+
+Next, set the factor levels so that the baseline condition is MM (Mindfulness Meditation), because this is compared to the other three conditions:
+
+```{r}
+dat$cond<-factor(dat$cond,levels=c("MM","CS","BB","CH"))
+contrasts(dat$cond)
+```
+
+Next, set up the dependent variables for  Figures 2 and 3:
+
+```{r}
+## create dependent variables:
+dat$PANASpos<-dat$PostPANASPos-dat$PrePANASPos
+dat$PANASneg<-dat$PostPANASNeg-dat$PrePANASNeg
+dat$STAI <- dat$PostSTAI-dat$PreSTAI
+```
+
+Graphical visualization of the dependent variables:
+
+```{r}
+op<-par(mfrow=c(3,1),pty="s")
+hist(dat$PANASpos)
+hist(dat$PANASneg)
+hist(dat$STAI)
+```
+
+Next, check the structure of the data:
+
+The key manipulation is between subjects:
+
+```{r}
+xtabs(~subj+cond,dat)
+```
+
+We have at most one data point per day (some missing data):
+
+```{r}
+xtabs(~subj+days,dat)
+```
+
+Figure 3 linear mixed model:
+
+```{r}
+library(lme4)
+m<-lmer(PANASpos~cond*days + (1|subj),data = dat)
+summary(m)          
+```
+
+
+Discrepancies between my analysis and the one in the paper:
+
+- Discrepancy 1: In the paper, figure 3 shows a significant effect of CS vs MM: the claimed estimate is 2.751 [0.651, 4.887]. My estimate is not even close:
+ -0.059 [ -2.05, 1.93]. See:
+ 
+>               Estimate Std. Error t value
+> condCS       -0.059036   0.996056  -0.059
+ 
+- Discrepancy 2: In the paper, a significant (!) interaction is reported between days and CSvsMM: 0.098 [-0.030, 0.0165]. This interaction is even more significant than the first one above, as there are two significance stars attached to it. But this interaction **cannot** be significant in the paper, because the confidence interval crosses 0. However,, my interaction term **is** significant, but with very different numbers: 0.07 [0.01, 0.13]. See:
+
+>              Estimate Std. Error t value
+> condCS:days  0.070344   0.029555   2.380
+
+
+# Figure 3: approximate recreation
+
+I can reproduce Figure 3, at least it looks visually similar to their plot.
+
+```{r}
+op<-par(mfrow=c(2,2),pty="s")
+
+conditions<-levels(dat$cond)
+
+for(j in 1:length(conditions)){
+dat_agg<-with(subset(dat,cond==conditions[j]),
+              tapply(PANASpos,days,mean,na.rm=TRUE))
+
+dat_agg_SD<-with(subset(dat,cond==conditions[j]),
+                 tapply(PANASpos,days,sd,na.rm=TRUE))
+
+lengths<-rep(NA,28)
+for(i in 1:28){
+lengths[i]<-dim(subset(dat,cond==conditions[j] & days == i))
+}
+
+SE<-dat_agg_SD/sqrt(lengths)
+
+datframe<-data.frame(y=dat_agg,
+                     x=1:28,
+                     lower=dat_agg-2*SE,
+                     upper=dat_agg+2*SE)
+
+plot(datframe$x,datframe$y,ylim=c(-3,max(datframe$y)+2),
+     xlab="days",
+     ylab="Positive Affect Change",
+     main=conditions[j])
+with(datframe,
+arrows(x0=x,y0=lower,x1=x,y1=upper,angle=90,
+       length=0)
+)
+abline(h=0)
+Sys.sleep(2)
+}
+```
+
+
+# Design analysis a la Gelman and Carlin
+
+```{r}
+## design analysis
+## sample sizes in each group:
+nMM<-length(unique(subset(dat,cond=="MM")$subj))
+nCS<-length(unique(subset(dat,cond=="CS")$subj))
+
+## effect size:
+d<-2.751
+## confidence intervals:
+upper<-4.887
+lower<-0.615
+## figure out SE:
+SE<-(upper-lower)/4
+```
+
+
+## Prospective power for the reported effect of CS vs MM in Figure 3's linear mixed model analysis, using the power.t.test function: 
+
+We first need to figure out the standard deviation:
+
+```{r}
+## assume identical SEs in each group and compute std dev from it:
+stddev<-sqrt(SE^2*nMM + SE^2*nCS)
+```
+
+What sample size would we need to achieve the reported effect size with power 0.80?
+
+```{r}
+## carry out power test using reported mean effect:
+power.t.test(d=d,sd=stddev,type="two.sample",alternative="two.sided",
+             power=0.80,
+             strict=TRUE)
+## carry out power test using lower bound of reported mean effect:
+power.t.test(d=lower,sd=stddev,type="two.sample",alternative="two.sided",
+             power=0.80,
+             strict=TRUE)
+## carry out power test using upper bound of reported mean effect:
+power.t.test(d=upper,sd=stddev,type="two.sample",alternative="two.sided",
+             power=0.80,
+             strict=TRUE)
+
+```
+
+Conclusion: the study reported would need about 135 subjects in each arm, probably even more (2652 in each arm) if the effect size is as small as the lower bound of the 95% confidence interval reported in the paper. 
+
