@@ -2,12 +2,22 @@
 title: "Breathing Huberman"
 author: "Shravan Vasishth"
 date: '2023-07-17'
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# tl;dr
+
+- I cannot reproduce a key claim in this paper (Figure 3), that cyclic sighing improves positive feelings compared to mindfulness meditation.
+- Surprisingly, about half the data consists of subjects who did not even do the exercise they were assigned. It seems the authors just included these cases, even if the key breathing or meditation task was not carried out.
+- A key interaction reported in Figure 3 cannot be significant (it even has two stars), because the reported confidence interval crosses zero. 
+
+I suspect that the data provided is not the data used in the published analysis.
+
+I think it is likely that this entire analysis is bogus and in my opinion, this paper should be retracted.
 
 # What the original paper is about
 
@@ -15,7 +25,7 @@ The paper is titled
 
 *Brief structured respiration practices enhance mood and reduce physiological arousal*
 
-and evaluates through an online study the effect of
+and evaluates through an internet-based study the effect of
 breathwork compared to mindfulness meditation on
 several different self-perceived well-being metrics.
 
@@ -25,6 +35,7 @@ https://doi.org/10.1016/j.xcrm.2022.100895
 It is open access and the data are purportedly available (more on this below).
 
 Mindfulness meditation (hereafter, MM) is compared to three other methods:
+
 - cyclic sighing (CS), ``which emphasizes prolonged exhalations''
 - box breathing (BB), ``which is equal duration of inhalations, breath retentions, and exhalations''
 - cyclic hyperventilation (CH) ``with retention, with longer inhalations and shorter exhalations''
@@ -35,47 +46,52 @@ The main statistical claim I wanted to investigate was:
 
 Also this:
 
-> 5 min per day of deliberate breathing practice can cause sig- nificant shifts in autonomic tone and well-being.
-
-[Conflict of interest statement: I practice Qi Gong daily, which involves the kind of breathing exercises they discuss in the paper. I already believe the claim that controlled breathing improves one's mental and physical state, but as the paper also mentions, Yogis knew that all along.]
+> 5 min per day of deliberate breathing practice can cause significant shifts in autonomic tone and well-being.
 
 # Methods
 
 114 participants, with the following between-subjects partitioning:
 
-- MM: 24
-- CS: 30
-- BB: 21
-- CH: 33
+- MM: 24 (in the data below, I see 25, or 23 if we remove the ones who didn't do the task)
+- CS: 30 (in the data provided, I see 31, or 29 if we remove the ones who didn't do the task)
+- BB: 21 (in the data provided, I see 22, or 21 if we remove the ones who didn't do the tasks)
+- CH: 33 (in the data provided, I see 35, or 34 if we remove the ones who didn't do the tasks)
 
 Dependent variables:
+
 - positive affect (positive and negative affect schedule [PANAS], range 10–50), 
 - negative affect (PANAS, range 10–50), 
 - state anxiety (State-Trait Anxiety Inventory [STAI], range 20–80) scores on each participant before and after each breathwork protocol daily.
 
 The experiment was conducted over 29 days, so we have repeated measurements from each subject in each condition, but no repeated measures across the four conditions.
 
-# Claim 1 using linear mixed models
+# Claim using linear mixed models (see their Fig 3)
 
 > We then examined if breathwork was more effective than mindfulness meditation in reducing anxiety and improving mood. To address this, we constructed a linear mixed-effects model with protocol type and ``number of days on protocol'' as the fixed effect and participants as the random effect predictors.
 
 > the breathwork group had a notably higher increase in daily pos- itive affect (Figures 2A and 2D). The breathwork group also had a significant interaction with the number of days on protocol, such that the daily positive affect increase was larger the more days subjects had been on the protocol (Figures 2A and 2D), suggest- ing an effect of adherence over time on the daily positive affect benefits.
 
-# Claim 2
-
-> we compared each specific breathwork group with the mindfulness meditation group using the same mixed-ef- fects modeling method. We found that the cyclic sighing group had a significantly higher increase in positive affect than those in the mindfulness meditation group (Figures 3, S2A, and S2B). The other two breathwork groups were also higher than mindful- ness meditation; however, this difference was not significant (Figures 3, S2A, S2C, and S2D). Cyclic sighing also had a signif- icant interaction with cumulative days on protocol compared with mindfulness meditation, suggesting that subjects benefited more from the exercise the more days they did it, an effect not observed in the other groups (Figure 3B).
-
 # The data provided
-
 
 The authors write:
 
->     De-identified raw human physiology and survey data have been deposited at Dryad repository (https://datadryad.org/) and are publicly available as of the date of publication. Accession numbers are listed in the key resources table.
-    All original code has been deposited at Zenodo and is publicly available as of the date of publication. DOIs are listed in the key resources table.
-    Any additional information required to reanalyze the data reported in this paper is available from the lead contact upon request.
+> De-identified raw human physiology and survey
+> data have been deposited at Dryad repository
+> (https://datadryad.org/) and are publicly
+> available as of the date of publication.
+> Accession numbers are listed in the key
+> resources table.
+> All original code has been deposited at Zenodo
+> and is publicly available as of the date of
+> publication. DOIs are listed in the key
+> resources table.
+> Any additional information required to
+> reanalyze the data reported in this paper is
+> available from the lead contact upon request.
 
 
-Some comments: 
+Some comments:
+
 - they claim that ``all original code'' has been deposited at Zenodo. However, all they deposit there is the R preprocessing files, the crucial linear mixed modeling code was done in Matlab and is not provided (at least, I could not find it). No data is provided with the files and no README, so it was impossible for me to run the code.
 - They mention a lead contact for obtaining any missing information, and the phrase lead contact is hyper-linked, but the link doesn't lead to any name.
 - The data are in an Excel file that is deposited in some other repository (dryad), not Zenodo, and is called:
@@ -90,26 +106,28 @@ Read in the csv version of the Excel file:
 
 ```{r}
 dat<-read.csv("BWPilot_CombinedData_20210803_fordryad_addvars_cleaned_noround2_v3.csv",sep=";",na.strings=".")
+colnames(dat)
 ```
 
-Isolate the first nine columns for the linear mixed models analyses.
+Isolate the first nine columns plus 11th column for the linear mixed models analyses.
 
 ```{r}
-colnames(dat)
-
-dat<-dat[,1:9]
+dat<-dat[,c(1:9,11)]
+head(dat)
 ```
 
 Rename the columms to more tractable names:
 
 ```{r}
-colnames(dat)<-c("subj","days","exercise","PrePANASPos","PrePANASNeg","PostPANASPos","PostPANASNeg","PreSTAI","PostSTAI")
+colnames(dat)<-c("subj","days","exercise","PrePANASPos","PrePANASNeg","PostPANASPos","PostPANASNeg","PreSTAI","PostSTAI","completed")
+head(dat)
 ```
 
 Remove all irrelevant days:
 
 ```{r}
-dat<-subset(dat,days>0 & days<29)
+dat<-subset(dat,days>0 & days < 29)
+head(dat)
 ```
 
 Sanity check:
@@ -128,8 +146,11 @@ dat$exercise<-factor(dat$exercise)
 
 The authors write that the names for the exercises in the data file do not correspond to the names used in the paper:
 
-> Round 1 Exercise: Participant’s assigned intervention. Note the nomenclature is slightly different than the manuscript. Super Oxygenation = Cyclic Hyperventilation with Retention. Slow Breathing = Cyclic Sighing
-
+> Round 1 Exercise: Participant’s assigned
+> intervention. Note the nomenclature is slightly
+> different than the manuscript. Super
+> Oxygenation = Cyclic Hyperventilation with
+> Retention. Slow Breathing = Cyclic Sighing
 
 We will therefore rename the conditions from those in the data file to those in the paper:
 
@@ -157,6 +178,17 @@ dat$cond<-factor(dat$cond,levels=c("MM","CS","BB","CH"))
 contrasts(dat$cond)
 ```
 
+
+The number of subjects in each condition:
+
+```{r}
+length(unique(subset(dat,cond=="MM")$subj))
+length(unique(subset(dat,cond=="CS")$subj))
+length(unique(subset(dat,cond=="BB")$subj))
+length(unique(subset(dat,cond=="CH")$subj))
+
+```
+
 Next, set up the dependent variables for  Figures 2 and 3:
 
 ```{r}
@@ -169,10 +201,10 @@ dat$STAI <- dat$PostSTAI-dat$PreSTAI
 Graphical visualization of the dependent variables:
 
 ```{r}
-op<-par(mfrow=c(3,1),pty="s")
-hist(dat$PANASpos)
-hist(dat$PANASneg)
-hist(dat$STAI)
+op<-par(mfrow=c(1,3),pty="s")
+hist(dat$PANASpos,main="PANAS positive")
+hist(dat$PANASneg,main="PANAS negative")
+hist(dat$STAI,main="STAI")
 ```
 
 Next, check the structure of the data:
@@ -188,51 +220,80 @@ We have at most one data point per day (some missing data):
 ```{r}
 xtabs(~subj+days,dat)
 ```
+## Subjects did the task only in about 50% of the cases
 
-Figure 3 linear mixed model:
+The paper states:
+
+> During the 28-day intervention period,
+> participants did their assigned 5-min exercise
+> and completed two questionnaires before and
+> after, the State Anxiety Inventory60 and the
+> Positive and Negative Affect Schedule (PANAS).
+
+The paper also states:
+
+> Participants were assumed to have completed the
+> breathing protocol if they had filled out the
+> pre- and post-measures for a particular day.
+
+But it seems some subjects did not complete the task; some didn't do the task at all!:
 
 ```{r}
-library(lme4)
-m<-lmer(PANASpos~cond*days + (1|subj),data = dat)
-summary(m)          
+xtabs(~subj+completed,dat)
+```
+
+If we remove the data where the task was not completed, we would lose about half the data. However, if subjects did not do the task assigned, should they be included in the analysis? I would say no, but I will report linear mixed models with and without these non-compliant subjects, because it seems that the authors ignored the fact that many subjects didn't even do the assigned task (they ignored the completed column).
+
+```{r}
+dim(dat)
+dat_completed<-subset(dat,completed==1)
+dim(dat_completed)
 ```
 
 
-Discrepancies between my analysis and the one in the paper:
+The number of subjects in each condition after we remove subjects who didn't do the task:
 
-- Discrepancy 1: In the paper, figure 3 shows a significant effect of CS vs MM: the claimed estimate is 2.751 [0.651, 4.887]. My estimate is not even close:
- -0.059 [ -2.05, 1.93]. See:
- 
->               Estimate Std. Error t value
-> condCS       -0.059036   0.996056  -0.059
- 
-- Discrepancy 2: In the paper, a significant (!) interaction is reported between days and CSvsMM: 0.098 [-0.030, 0.0165]. This interaction is even more significant than the first one above, as there are two significance stars attached to it. But this interaction **cannot** be significant in the paper, because the confidence interval crosses 0. However,, my interaction term **is** significant, but with very different numbers: 0.07 [0.01, 0.13]. See:
+```{r}
+length(unique(subset(dat_completed,cond=="MM")$subj))
+length(unique(subset(dat_completed,cond=="CS")$subj))
+length(unique(subset(dat_completed,cond=="BB")$subj))
+length(unique(subset(dat_completed,cond=="CH")$subj))
 
->              Estimate Std. Error t value
-> condCS:days  0.070344   0.029555   2.380
+```
 
 
-# Figure 3: approximate recreation
+## Figure 3: approximate recreations
 
-I can reproduce Figure 3, at least it looks visually similar to their plot.
+Here is their Figure 3:
+
+![figure 3](figures/fig3.png)
+
+
+I can reproduce their Figure 3 more or less, at least it looks visually similar to their plot. In particular, the CS (cyclic sighing) values seem to rise higher than the mindfulness meditation (MM) values over time.
+
+This plot is based on the full data, regardless  of whether subjects completed the task:
 
 ```{r}
 op<-par(mfrow=c(2,2),pty="s")
 
 conditions<-levels(dat$cond)
 
+# for each condition, make a plot:
 for(j in 1:length(conditions)){
+# First, aggregate the data:  
 dat_agg<-with(subset(dat,cond==conditions[j]),
               tapply(PANASpos,days,mean,na.rm=TRUE))
 
+# Compute SD:
 dat_agg_SD<-with(subset(dat,cond==conditions[j]),
                  tapply(PANASpos,days,sd,na.rm=TRUE))
-
+# figure out no. of data points in the condition being plotted:
 lengths<-rep(NA,28)
 for(i in 1:28){
-lengths[i]<-dim(subset(dat,cond==conditions[j] & days == i))
+lengths[i]<-dim(subset(dat,cond==conditions[j] & days == i))[1]
 }
 
+# compute SE for plotting confidence intervals:
 SE<-dat_agg_SD/sqrt(lengths)
 
 datframe<-data.frame(y=dat_agg,
@@ -249,12 +310,92 @@ arrows(x0=x,y0=lower,x1=x,y1=upper,angle=90,
        length=0)
 )
 abline(h=0)
-Sys.sleep(2)
+}
+```
+
+Here is the plot using only those data in which subjects actually did the task:
+
+```{r}
+op<-par(mfrow=c(2,2),pty="s")
+
+conditions<-levels(dat_completed$cond)
+
+# for each condition, make a plot:
+for(j in 1:length(conditions)){
+# First, aggregate the data:  
+dat_agg<-with(subset(dat_completed,cond==conditions[j]),
+              tapply(PANASpos,days,mean,na.rm=TRUE))
+
+# Compute SD:
+dat_agg_SD<-with(subset(dat_completed,cond==conditions[j]),
+                 tapply(PANASpos,days,sd,na.rm=TRUE))
+# figure out no. of data points in the condition being plotted:
+lengths<-rep(NA,28)
+for(i in 1:28){
+lengths[i]<-dim(subset(dat_completed,cond==conditions[j] & days == i))[1]
+}
+
+# compute SE for plotting confidence intervals:
+SE<-dat_agg_SD/sqrt(lengths)
+
+datframe<-data.frame(y=dat_agg,
+                     x=1:28,
+                     lower=dat_agg-2*SE,
+                     upper=dat_agg+2*SE)
+
+plot(datframe$x,datframe$y,ylim=c(-3,max(datframe$y)+2),
+     xlab="days",
+     ylab="Positive Affect Change",
+     main=conditions[j])
+with(datframe,
+arrows(x0=x,y0=lower,x1=x,y1=upper,angle=90,
+       length=0)
+)
+abline(h=0)
 }
 ```
 
 
-# Design analysis a la Gelman and Carlin
+
+## Figure 3 linear mixed model with all data (regardless of whether the subject did the task):
+
+The paper states
+
+"A mixed-effects modeling approach was used to compare changes across groups (Figure 2). Daily change between pre and post protocol for each subject was used as the main unit for modeling. All variables were centered by subtracting the mean before feeding into the model. The cumulative day variable was centered at day 28. Data processing was performed in R and linear mixed-effects modeling was conducted using the ``fitlme'' function in MATLAB."
+
+
+I don't have Matlab so I used lme4.
+
+```{r}
+library(lme4)
+
+# center days around 28:
+dat$days<-dat$days-28
+
+m<-lmer(PANASpos~cond*days + (1|subj),data = dat)
+summary(m)          
+```
+
+## Figure 3 linear mixed model with only the data from subjects who completed the task:
+
+```{r}
+dat_completed$days<-dat_completed$days-28
+
+m_completed<-lmer(PANASpos~cond*days + (1|subj),data = dat_completed)
+summary(m_completed)          
+```
+
+### Discussion of linear mixed model results
+
+Discrepancies between my analysis and the one in the paper:
+
+- Discrepancy 1: In the paper, figure 3 shows a significant effect of CS vs MM: the claimed estimate is 2.751 [0.651, 4.887]. My estimate is not even close (see condCS in the model outputs).
+ 
+- Discrepancy 2: In the paper, a significant (!) interaction is reported between days and CSvsMM: 0.098 [-0.030, 0.0165]. This interaction is even more significant than the first one above, as there are two significance stars attached to it. But this interaction **cannot** be significant in the paper, because the confidence interval crosses 0. However, my interaction term **is** significant, but with different numbers (see condCS:days). 
+
+## Design analysis a la Gelman and Carlin
+
+It's useful to try to figure out what sample size one might need for the above comparisons. I focus only on MM vs CS.
 
 ```{r}
 ## design analysis
@@ -262,7 +403,7 @@ Sys.sleep(2)
 nMM<-length(unique(subset(dat,cond=="MM")$subj))
 nCS<-length(unique(subset(dat,cond=="CS")$subj))
 
-## effect size:
+## effect size as reported (not reproducible):
 d<-2.751
 ## confidence intervals:
 upper<-4.887
