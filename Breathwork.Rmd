@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 - I cannot reproduce a key claim in this paper (Figure 3), that cyclic sighing improves positive feelings compared to mindfulness meditation.
 - Surprisingly, about half the data consists of subjects who did not even do the exercise they were assigned. It seems the authors just included these cases, even if the key breathing or meditation task was not carried out.
+- Including a predictor that indicates whether the participant did the task or not has no impact on the outcome---it seems to not matter whether the participant even did the task.
 - A key interaction reported in Figure 3 cannot be significant (it even has two stars), because the reported confidence interval crosses zero. 
 
 I suspect that the data provided is not the data used in the published analysis.
@@ -376,7 +377,28 @@ m<-lmer(PANASpos~cond*days + (1|subj),data = dat)
 summary(m)          
 ```
 
+### Is there any effect of completing the task?
+
+In about half the trials, the subjects didn't even complete the task assigned to them. Below, 0 means they did not complete the task, 1 means they did. Some subjects didn't do the task at all over the 28 days.
+
+```{r}
+completion<-xtabs(~subj+completed,dat)
+t(completion)
+```
+
+Does this impact the analysis? I add main effects and interactions of cond, days, and whether the participant completed the task on a particular day.
+
+```{r}
+m_completed<-lmer(PANASpos~cond*days*completed + (1|subj),data = dat)
+summary(m_completed)          
+
+```
+
+Conclusion: We see no main effects of any manipulation, but this time box breathing interacts with days (condBB:days). There are no other significant effects. 
+
 ## Figure 3 linear mixed model with only the data from subjects who completed the task:
+
+Perhaps the effect of breathing over MM shows up if we only look at trials in which the subjects actually did the task.
 
 ```{r}
 dat_completed$days<-dat_completed$days-28
@@ -385,11 +407,13 @@ m_completed<-lmer(PANASpos~cond*days + (1|subj),data = dat_completed)
 summary(m_completed)          
 ```
 
+Conclusion: condCS:days is significant, but that is the same outcome as in the original data without any removal of trials which were completed. It seems that over 28 days cyclic sighing gives better scores over Mindfulness Meditation, regardless of whether one does cyclic sighing!
+
 ### Discussion of linear mixed model results
 
 Discrepancies between my analysis and the one in the paper:
 
-- Discrepancy 1: In the paper, figure 3 shows a significant effect of CS vs MM: the claimed estimate is 2.751 [0.651, 4.887]. My estimate is not even close (see condCS in the model outputs).
+- Discrepancy 1: In the paper, figure 3 shows a significant effect of CS vs MM: the claimed estimate is 2.751 [0.651, 4.887]. My estimate (analyzed any of the three ways) is not even close (see condCS in the model outputs).
  
 - Discrepancy 2: In the paper, a significant (!) interaction is reported between days and CSvsMM: 0.098 [-0.030, 0.0165]. This interaction is even more significant than the first one above, as there are two significance stars attached to it. But this interaction **cannot** be significant in the paper, because the confidence interval crosses 0. However, my interaction term **is** significant, but with different numbers (see condCS:days). 
 
