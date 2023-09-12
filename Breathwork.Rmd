@@ -1,9 +1,8 @@
 ---
 title: "Reanalysis of the paper: Brief structured respiration practices enhance mood and reduce physiological arousal, by Melis Yilmaz Balban, Eric Neri, Manuela M. Kogon, Lara Weed, Bita Nouriani, Booil Jo, Gary Holl, Jamie M. Zeitzer, David Spiegel, and Andrew D. Huberman in Cell Reports Medicine"
 author: "Shravan Vasishth"
-toc: true
 date: '2023-09-12'
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -351,7 +350,7 @@ The plots below are based on the full data, regardless  of whether subjects comp
 
 First, here is the plot for positive affect change for the two conditions:
 
-```{r fig2recreation,fig.cap="Approximate recreation of their Figure 2."}
+```{r fig2recreation1,fig.cap="Approximate recreation of their Figure 2 (all the data, positive affect change)."}
 op<-par(mfrow=c(1,2),pty="s")
 
 dat$cond2<-factor(ifelse(dat$BvsMM==-0.5,"MM","Breathing"))
@@ -397,7 +396,7 @@ abline(h=0)
 Second, we look at negative affect change:
 
 
-```{r}
+```{r fig2recreation2,fig.cap="Approximate recreation of their Figure 2 (all the data, negative affect change)."}
 op<-par(mfrow=c(1,2),pty="s")
 
 ## PANAS neg:
@@ -438,7 +437,7 @@ abline(h=0)
 
 Finally, we plot STAI:
 
-```{r}
+```{r fig2recreation3,fig.cap="Approximate recreation of their Figure 2 (all the data, STAI)."}
 op<-par(mfrow=c(1,2),pty="s")
 ## STAI:
 # for each condition, make a plot:
@@ -480,7 +479,7 @@ abline(h=0)
 
 Here is the plot for PANAS positive (the only dependent variable with significant effects reported) using only those data in which subjects actually did the task:
 
-```{r}
+```{r fig2recreation1completed,fig.cap="Approximate recreation of their Figure 2 (only those who completed the task, Positive Affect change)."}
 op<-par(mfrow=c(1,2),pty="s")
 
 dat_completed$cond2<-factor(ifelse(dat_completed$BvsMM==-0.5,"MM","Breathing"))
@@ -524,7 +523,7 @@ abline(h=0)
 
 Next, the negative affect change:
 
-```{r}
+```{r fig2recreation2completed,fig.cap="Approximate recreation of their Figure 2 (only those who completed the task, Negative Affect change)."}
 op<-par(mfrow=c(1,2),pty="s")
 
 dat_completed$cond2<-factor(ifelse(dat_completed$BvsMM==-0.5,"MM","Breathing"))
@@ -569,7 +568,7 @@ abline(h=0)
 
 Finally, STAI
 
-```{r}
+```{r fig2recreation3completed,fig.cap="Approximate recreation of their Figure 2 (only those who completed the task, STAI)."}
 op<-par(mfrow=c(1,2),pty="s")
 
 # for each condition, make a plot:
@@ -691,7 +690,7 @@ I can reproduce their Figure 3 more or less, at least it looks visually similar 
 
 This plot is based on the full data, regardless  of whether subjects completed the task:
 
-```{r}
+```{r fig3recreation1,fig.cap="Recreation of figure  (all the data, Positive Affect change)."}
 op<-par(mfrow=c(2,2),pty="s")
 
 conditions<-levels(dat$cond)
@@ -735,7 +734,7 @@ abline(h=0)
 
 Here is the plot using only those data in which subjects actually did the task:
 
-```{r}
+```{r fig3recreation1complete,fig.cap="Recreation of figure  (only those who completed the task, Positive Affect change)."}
 op<-par(mfrow=c(2,2),pty="s")
 
 conditions<-levels(dat_completed$cond)
