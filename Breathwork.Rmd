@@ -19,11 +19,27 @@ The authors provide the data (no code), or at least claim to provide the data th
 
 I attempted to reproduce the analyses reported in their paper.
 
+## Compliance with the task
+
+The authors write:
+
+> On average, mindfulness meditation participants completed 17.71 $\pm$ 9.25 of the 28 days, and breathwork participants completed 19.61 $\pm$ 7.73 of the 28 days.
+
+Also, they acknowledge that compliance is self-reports from the subjects, i.e., there is no way to confirm that the subjects actually did the task:
+
+> The remote nature of the study limited the monitoring of how closely participants followed the instructions on a daily basis. In addition, we had to rely on the completion of daily surveys to assess adherence. Adherence can be better monitored and enforced in future studies by implementing automatic time stamping when participants start and end their exercise.
+
+They also write:
+
+>  Participants were assumed to have completed the breathing protocol if they had filled out the pre- and post-measures for a particular day.
+
+So we are just depending on the subjects being honest (did they maybe sign a pledge before doing the experiment? A nod to Ariely and Gino ;)
+
 ## Summary of main findings
 
 - I cannot reproduce a key claim in this paper (Figure 3), that cyclic sighing improves positive feelings compared to mindfulness meditation.
-- Surprisingly, from the Excel file it seems that about half the data consists of subjects who did not even do the exercise they were assigned. It seems the authors just included these cases, even if the key breathing or meditation task was not even carried out.
-- Including a predictor that indicates whether the participant did the task or not has no impact on the outcome.
+- Surprisingly, from the Excel file it seems that about half the data consists of subjects who did not even do the exercise they were assigned. It is not clear to me whether the authors just included these cases, even if the key breathing or meditation task was not even carried out. Below I will analyze only the cases where they were supposed to have complied.
+- Including a predictor that indicates whether the participant did the task or not has no impact on the outcome. This was not an analysis they did, this is my additional analysis. There should have been an impact of compliance (interaction with the intervention type). 
 - A key interaction reported in Figure 3 cannot be significant (it even has two stars), because the reported confidence interval crosses zero. 
 
 I suspect that the data provided is not the data used in the published analysis.
@@ -608,7 +624,7 @@ abline(h=0)
 
 ### Linear mixed models for Figure 2
 
-#### Analysis with all subjects
+#### Analysis with all subjects regardless of completion (not what the authors supposedly did)
 
 ```{r}
 library(lme4)
@@ -627,7 +643,7 @@ summary(mfig2pos)
 #summary(mfig2stai)
 ```
 
-#### Analysis with subjects who did the task
+#### Analysis with subjects who actually did the task
 
 Next, let's analyze the data only with the subjects who completed the data:
 
@@ -647,7 +663,7 @@ summary(mfig2pos_comp)
 
 #### Adding completion as a predictor
 
-What about if we add completion as a predictor:
+What about if we add completion as a predictor (the authors did not do this):
 
 ```{r}
 mfig2pos_comp2<-lmer(PANASpos~BvsMM*days*completed + (1|subj),dat)
