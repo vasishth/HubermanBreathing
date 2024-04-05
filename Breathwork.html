@@ -375,6 +375,34 @@ mindfulness meditation</p>
 <p>The authors provide the data (no code), or at least claim to provide
 the data that resulted in the paper (see details below).</p>
 <p>I attempted to reproduce the analyses reported in their paper.</p>
+<div id="compliance-with-the-task" class="section level2">
+<h2>Compliance with the task</h2>
+<p>The authors write:</p>
+<blockquote>
+<p>On average, mindfulness meditation participants completed 17.71 <span class="math inline">\(\pm\)</span> 9.25 of the 28 days, and breathwork
+participants completed 19.61 <span class="math inline">\(\pm\)</span>
+7.73 of the 28 days.</p>
+</blockquote>
+<p>Also, they acknowledge that compliance is self-reports from the
+subjects, i.e., there is no way to confirm that the subjects actually
+did the task:</p>
+<blockquote>
+<p>The remote nature of the study limited the monitoring of how closely
+participants followed the instructions on a daily basis. In addition, we
+had to rely on the completion of daily surveys to assess adherence.
+Adherence can be better monitored and enforced in future studies by
+implementing automatic time stamping when participants start and end
+their exercise.</p>
+</blockquote>
+<p>They also write:</p>
+<blockquote>
+<p>Participants were assumed to have completed the breathing protocol if
+they had filled out the pre- and post-measures for a particular day.</p>
+</blockquote>
+<p>So we are just depending on the subjects being honest (did they maybe
+sign a pledge before doing the experiment? A nod to Ariely and Gino
+;)</p>
+</div>
 <div id="summary-of-main-findings" class="section level2">
 <h2>Summary of main findings</h2>
 <ul>
@@ -383,10 +411,14 @@ sighing improves positive feelings compared to mindfulness
 meditation.</li>
 <li>Surprisingly, from the Excel file it seems that about half the data
 consists of subjects who did not even do the exercise they were
-assigned. It seems the authors just included these cases, even if the
-key breathing or meditation task was not even carried out.</li>
+assigned. It is not clear to me whether the authors just included these
+cases, even if the key breathing or meditation task was not even carried
+out. Below I will analyze only the cases where they were supposed to
+have complied.</li>
 <li>Including a predictor that indicates whether the participant did the
-task or not has no impact on the outcome.</li>
+task or not has no impact on the outcome. This was not an analysis they
+did, this is my additional analysis. There should have been an impact of
+compliance (interaction with the intervention type).</li>
 <li>A key interaction reported in Figure 3 cannot be significant (it
 even has two stars), because the reported confidence interval crosses
 zero.</li>
@@ -1417,8 +1449,9 @@ task, STAI).
 </div>
 <div id="linear-mixed-models-for-figure-2" class="section level3">
 <h3>Linear mixed models for Figure 2</h3>
-<div id="analysis-with-all-subjects" class="section level4">
-<h4>Analysis with all subjects</h4>
+<div id="analysis-with-all-subjects-regardless-of-completion-not-what-the-authors-supposedly-did" class="section level4">
+<h4>Analysis with all subjects regardless of completion (not what the
+authors supposedly did)</h4>
 <pre class="r"><code>library(lme4)</code></pre>
 <pre><code>## Loading required package: Matrix</code></pre>
 <pre class="r"><code>mfig2pos&lt;-lmer(PANASpos~BvsMM*days + (1|subj),dat)
@@ -1459,8 +1492,8 @@ affect change:</p>
 #summary(mfig2neg)
 #summary(mfig2stai)</code></pre>
 </div>
-<div id="analysis-with-subjects-who-did-the-task" class="section level4">
-<h4>Analysis with subjects who did the task</h4>
+<div id="analysis-with-subjects-who-actually-did-the-task" class="section level4">
+<h4>Analysis with subjects who actually did the task</h4>
 <p>Next, let’s analyze the data only with the subjects who completed the
 data:</p>
 <pre class="r"><code>mfig2pos_comp&lt;-lmer(PANASpos~BvsMM*days + (1|subj),dat_completed)
@@ -1502,7 +1535,8 @@ significant):</p>
 </div>
 <div id="adding-completion-as-a-predictor" class="section level4">
 <h4>Adding completion as a predictor</h4>
-<p>What about if we add completion as a predictor:</p>
+<p>What about if we add completion as a predictor (the authors did not
+do this):</p>
 <pre class="r"><code>mfig2pos_comp2&lt;-lmer(PANASpos~BvsMM*days*completed + (1|subj),dat)
 mfig2neg_comp2&lt;-lmer(PANASneg~BvsMM*days*completed + (1|subj),dat)
 mfig2stai_comp2&lt;-lmer(STAI~BvsMM*days*completed + (1|subj),dat)</code></pre>
@@ -1687,7 +1721,7 @@ cumulative day variable was centered at day 28. Data processing was
 performed in R and linear mixed-effects modeling was conducted using the
 ``fitlme’’ function in MATLAB.”</p>
 <p>I don’t have Matlab so I used lme4.</p>
-<div id="analysis-with-all-subjects-1" class="section level4">
+<div id="analysis-with-all-subjects" class="section level4">
 <h4>Analysis with all subjects</h4>
 <pre class="r"><code>library(lme4)
 
